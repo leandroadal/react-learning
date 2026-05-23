@@ -25,7 +25,23 @@ export default class Main extends Component {
   // Novo método
   state = {
     novaTarefa: '',
-    tarefas: ['Fazer café', 'Beber aguua', 'Estudar'],
+    tarefas: [],
+  };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    const { tarefas } = this.state;
+    let { novaTarefa } = this.state;
+    novaTarefa = novaTarefa.trim();
+
+    if (tarefas.indexOf(novaTarefa) !== -1) return;
+
+    // shallow copy
+    const novasTarefas = [...tarefas];
+
+    this.setState({
+      tarefas: [...novasTarefas, novaTarefa],
+    });
   };
 
   handleChange = (e) => {
@@ -40,7 +56,7 @@ export default class Main extends Component {
       <div className="main">
         <h1>Lista de tarefas</h1>
 
-        <form action="#" className="form">
+        <form onSubmit={this.handleSubmit} action="#" className="form">
           <input
             onChange={this.handleChange}
             type="text"
