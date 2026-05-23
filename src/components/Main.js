@@ -26,28 +26,21 @@ export default class Main extends Component {
   state = {
     novaTarefa: '',
     tarefas: [],
-  };
-
-  handleSubmit = (e) => {
-    e.preventDefault();
-    const { tarefas } = this.state;
-    let { novaTarefa } = this.state;
-    novaTarefa = novaTarefa.trim();
-
-    if (tarefas.indexOf(novaTarefa) !== -1) return;
-
-    // shallow copy
-    const novasTarefas = [...tarefas];
-
-    this.setState({
-      tarefas: [...novasTarefas, novaTarefa],
-      novaTarefa: '',
-    });
+    index: null,
   };
 
   handleChange = (e) => {
     this.setState({
       novaTarefa: e.target.value,
+    });
+  };
+
+  handleEdit = (e, index) => {
+    const { tarefas } = this.state;
+
+    this.setState({
+      index,
+      novaTarefa: tarefas[index],
     });
   };
 
@@ -58,11 +51,47 @@ export default class Main extends Component {
 
     this.setState({
       tarefas: [...novasTarefas],
+      index: null, // Reseta caso estivesse editando o item excluído
+      novaTarefa: '',
     });
   };
 
+  createTask = (tarefa, tarefas) => {
+    if (tarefas.includes(tarefa)) return;
+    this.setState({
+      tarefas: [...tarefas, tarefa],
+      novaTarefa: '',
+    });
+  };
+
+  updateTask = (tarefa, tarefas, index) => {
+    const novasTarefas = [...tarefas];
+    novasTarefas[index] = tarefa;
+
+    this.setState({
+      tarefas: novasTarefas,
+      index: null, // Volta ao estado inicial
+      novaTarefa: '', // Limpa o campo
+    });
+  };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    const { tarefas, index, novaTarefa } = this.state;
+    const tarefaLimpa = novaTarefa.trim();
+
+    if (!tarefaLimpa) return;
+
+    // Se o index é nulo, então não foi enviado tarefa edição.
+    if (index === null) {
+      this.createTask(tarefaLimpa, tarefas);
+    } else {
+      this.updateTask(tarefaLimpa, tarefas, index);
+    }
+  };
+
   render() {
-    const { novaTarefa, tarefas } = this.state;
+    const { novaTarefa, tarefas, index } = this.state;
     return (
       <div className="main">
         <h1>Lista de tarefas</h1>
@@ -74,7 +103,7 @@ export default class Main extends Component {
             value={novaTarefa}
           ></input>
           <button type="submit">
-            <FaPlus />
+            {index !== null ? <FaEdit /> : <FaPlus />}
           </button>
         </form>
 
@@ -83,7 +112,10 @@ export default class Main extends Component {
             <li key={tarefa}>
               {tarefa}
               <span>
-                <FaEdit className="edit" />
+                <FaEdit
+                  onClick={(e) => this.handleEdit(e, index)}
+                  className="edit"
+                />
                 <FaWindowClose
                   onClick={(e) => this.handleDelete(e, index)}
                   className="delete"
